@@ -24,31 +24,55 @@
 package com.sartor.javaping;
 
 public class Host {
-	private long id;
-	private String address;
+  private long id;
+  private String address;
+  private int port;
+  private EnumCommand command;
 
-	public Host() {
-	}
+  public Host() {
+  }
 
-	public Host( long id, String address ) {
-		this.id = id;
-		this.address = address;
-	}
+  public Host( long id, String address, int port, EnumCommand command ) {
+    this.id = id;
+    this.address = address;
+    this.port = port;
+    this.command = command;
+  }
 
-	public long getId() {
-		return this.id;
-	}
+  public long getId() {
+    return this.id;
+  }
 
-	public void setId( long id ) {
-		this.id = id;
-	}
+  public void setId( long id ) {
+    this.id = id;
+  }
 
-	public String getAddress() {
-		return this.address;
-	}
+  public String getAddress() {
+    return this.address;
+  }
 
-	public void setAddress( String address ) {
-		this.address = address;
-	}
+  public void setAddress( String address ) {
+    this.address = address;
+  }
 
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort( int port ) {
+    this.port = port;
+  }
+
+  public void setCommand( EnumCommand command ) {
+    this.command = command;
+  }
+
+  public EnumCommand getCommand() {
+    return command;
+  }
+  
+  @Override
+  public String toString() {
+    return address + ":" + port;
+  }
 }

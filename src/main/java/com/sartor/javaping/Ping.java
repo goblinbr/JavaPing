@@ -23,72 +23,114 @@
  */
 package com.sartor.javaping;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Hello world!
- *
- */
 public class Ping {
 
-	private String countParam = "";
-	private String[] redundantHosts = new String[] { "www.google.com", "www.amazon.com" };
+  private String countParam = "";
 
-	private Ping() {
-		boolean isWindows = System.getProperty( "os.name" ).toLowerCase().contains( "win" );
-		this.countParam = isWindows ? "-n" : "-c";
-	}
+  // private Host[] redundantHosts = new Host[] { new Host(0,"www.google.com.br", 80, EnumCommand.CONNECT), new Host(0,"www.amazon.com.br", 80, EnumCommand.CONNECT) };
+  private Host[] redundantHosts = new Host[] { new Host( 0, "www.google.com.br", 80, EnumCommand.CONNECT ) };
 
-	public static void main( String[] args ) {
-		new Ping().run();
-	}
+  private Ping() {
+    boolean isWindows = System.getProperty( "os.name" ).toLowerCase().contains( "win" );
+    if ( isWindows ) {
+      this.countParam = "-n";
+    }
+    else {
+      this.countParam = "-c";
+    }
+  }
 
-	private void run() {
-		List<Host> hostList = new ArrayList<Host>();
-		hostList.add( new Host( 2, "www.kugel.com.br" ) );
-		hostList.add( new Host( 3, "www.capal.coop.br" ) );
-		hostList.add( new Host( 4, "200.169.77.34" ) );
-		hostList.add( new Host( 5, "201.47.57.180" ) );
-		hostList.add( new Host( 5, "201.47.57.181" ) );
+  public static void main( String[] args ) {
+    new Ping().run();
+  }
 
-		while ( true ) {
-			try {
-				for ( Host host : hostList ) {
-					boolean pingOk = ping( host.getAddress() );
+  private void run() {
+    List<Host> hostList = new ArrayList<Host>();
+    // hostList.add( new Host( 2, "www.kugel.com.br", 80, EnumCommand.CONNECT ) );
+    // hostList.add( new Host( 2, "www.kugel.com.br", 80, EnumCommand.PING ) );
+    // hostList.add( new Host( 3, "www.capal.coop.br", 80, EnumCommand.CONNECT ) );
+    // hostList.add( new Host( 3, "www.capal.coop.br", 80, EnumCommand.PING ) );
+    // hostList.add( new Host( 4, "200.169.77.34", 80, EnumCommand.CONNECT ) );
+    // hostList.add( new Host( 4, "200.169.77.34", 80, EnumCommand.PING ) );
+    // hostList.add( new Host( 5, "201.47.57.180", 80, EnumCommand.CONNECT ) );
+    // hostList.add( new Host( 5, "201.47.57.180", 80, EnumCommand.PING ) );
+    // hostList.add( new Host( 5, "201.47.57.181", 80, EnumCommand.CONNECT ) );
+    // hostList.add( new Host( 5, "201.47.57.181", 80, EnumCommand.PING ) );
 
-					if ( !pingOk ) {
-						boolean connectionOk = true;
-						for ( String redundantHost : this.redundantHosts ) {
-							if ( !ping( redundantHost ) ) {
-								connectionOk = false;
-							}
-						}
-						if ( connectionOk ) {
-							pingOk = ping( host.getAddress() );
-						}
-					}
-					if ( !pingOk ) {
-						System.err.println( host.getAddress() + " caiu!" );
-					}
-				}
-				Thread.sleep( 1000 );
-			} catch ( Exception ex ) {
-				ex.printStackTrace();
-			}
-		}
-	}
+    hostList.add( new Host( 5, "200.169.77.40", 3389, EnumCommand.CONNECT ) );
+    // hostList.add( new Host( 2, "200.169.77.40", 0, EnumCommand.PING ) );
 
-	private boolean ping( String host ) throws Exception {
-		// long ms = System.currentTimeMillis();
+    while ( true ) {
+      try {
+        for ( Host host : hostList ) {
+          boolean pingOk = pingOrConnect( host, 500 );
 
-		ProcessBuilder processBuilder = new ProcessBuilder( "ping", this.countParam, "1", host );
-		Process proc = processBuilder.start();
+          boolean connectionOk = true;
+          if ( !pingOk ) {
+            for ( Host redundantHost : this.redundantHosts ) {
+              if ( !pingOrConnect( redundantHost, 3000 ) ) {
+                connectionOk = false;
+              }
+            }
+            if ( connectionOk ) {
+              pingOk = pingOrConnect( host, 3000 );
+            }
+          }
+          if ( !pingOk && connectionOk ) {
+            System.err.println( host + " caiu!" );
+          }
+        }
+        Thread.sleep( 1000 );
+      }
+      catch ( Exception ex ) {
+        ex.printStackTrace();
+      }
+    }
+  }
 
-		int returnVal = proc.waitFor();
-		// ms = System.currentTimeMillis() - ms;
-		// System.out.println( "ping " + host + ": " + ms + " ms" );
+  private boolean pingOrConnect( Host host, int timeout ) throws Exception {
+    long ms = System.currentTimeMillis();
 
-		return returnVal == 0;
-	}
+    boolean ok;
+    if ( host.getCommand() == EnumCommand.PING ) {
+      ProcessBuilder processBuilder = new ProcessBuilder( "ping", this.countParam, "1", host.getAddress() );
+      Process proc = processBuilder.start();
+
+      int returnVal = proc.waitFor();
+      ms = System.currentTimeMillis() - ms;
+      System.out.println( "ping " + host + ": " + ms + " ms" );
+
+      ok = returnVal == 0;
+    }
+    else {
+      try {
+        Socket socket = new Socket();
+        socket.connect( new InetSocketAddress( host.getAddress(), host.getPort() ), timeout );
+
+        ms = System.currentTimeMillis() - ms;
+        System.out.println( "connect " + host + ": " + ms + " ms" );
+
+        // BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        // System.out.println("server says:" + br.readLine());
+
+        socket.close();
+
+        ok = true;
+      }
+      catch ( IOException ex ) {
+        ok = false;
+      }
+      catch ( Exception e ) {
+        ok = false;
+      }
+    }
+    return ok;
+  }
 }

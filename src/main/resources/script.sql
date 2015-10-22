@@ -1,6 +1,8 @@
 HOST
 - ID
 - ADDRESS
+- PORT
+- COMMAND
 
 USER
 - ID
