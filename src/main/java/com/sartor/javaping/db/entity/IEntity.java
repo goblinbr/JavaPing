@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.sartor.javaping;
+package com.sartor.javaping.db.entity;
 
-public enum EnumCommand {
-  PING, CONNECT;
+public interface IEntity {
+
 }

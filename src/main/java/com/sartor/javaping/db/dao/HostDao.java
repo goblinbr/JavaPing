@@ -21,8 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.sartor.javaping;
 
-public enum EnumCommand {
-  PING, CONNECT;
+package com.sartor.javaping.db.dao;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+import com.sartor.javaping.db.entity.Host;
+
+public class HostDao extends GenericDao<Host> {
+	
+	private static final String SQL_FIND_BY_ID = "select * from HOST where ID = :id:";
+	private static final String SQL_FIND_ALL = "select * from HOST";
+
+	public HostDao(Connection connection) throws SQLException {
+		super(connection,Host.class);
+	}
+	
+	public List<Host> findAll() throws SQLException {
+		return super.findAll( SQL_FIND_ALL );
+	}
+
 }
