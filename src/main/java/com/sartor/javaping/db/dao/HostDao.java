@@ -25,22 +25,24 @@
 package com.sartor.javaping.db.dao;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
+import com.sartor.javaping.EnumCommand;
 import com.sartor.javaping.db.entity.Host;
 
 public class HostDao extends GenericDao<Host> {
 	
-	private static final String SQL_FIND_BY_ID = "select * from HOST where ID = :id:";
-	private static final String SQL_FIND_ALL = "select * from HOST";
+	public HostDao() throws SQLException {
+		super(Host.class);		
+	}
 
-	public HostDao(Connection connection) throws SQLException {
-		super(connection,Host.class);
-	}
-	
-	public List<Host> findAll() throws SQLException {
-		return super.findAll( SQL_FIND_ALL );
-	}
+    @Override
+    protected void setFields(ResultSet rs, Host obj) throws SQLException {
+        obj.setAddress(rs.getString("ADDRESS"));
+        obj.setId(rs.getInt("ID"));
+        obj.setPort(rs.getInt("PORT"));
+        obj.setCommand(EnumCommand.getByDatabaseValue( rs.getString("COMMAND") ));
+    }
 
 }

@@ -24,5 +24,24 @@
 package com.sartor.javaping;
 
 public enum EnumCommand {
-  PING, CONNECT;
+    PING('P'), CONNECT('C');
+    
+    private final char databaseValue;
+    
+    private EnumCommand(char databaseValue) {
+        this.databaseValue = databaseValue;
+    }
+    
+    public char getDatabaseValue() {
+        return databaseValue;
+    }
+
+    public static EnumCommand getByDatabaseValue(String value) {
+        for( EnumCommand cmd : values() ){
+            if( String.valueOf( cmd.databaseValue ).equals(value) ){
+                return cmd;
+            }
+        }
+        return null;
+    }
 }

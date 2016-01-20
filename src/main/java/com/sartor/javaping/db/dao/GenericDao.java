@@ -24,30 +24,39 @@
 package com.sartor.javaping.db.dao;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import com.sartor.javaping.db.DbManager;
 import com.sartor.javaping.db.entity.IEntity;
 
-public class GenericDao<T extends IEntity> {
+public abstract class GenericDao<T extends IEntity> {
 
 	protected Connection connection;
 	private Class<T> entityClass;
 	private Statement statement;
 	
-	public GenericDao( Connection connection, Class<T> entityClass ) throws SQLException {
-		this.connection = connection;
+	private final PreparedStatement psFindAll;
+	
+	public GenericDao(Class<T> entityClass ) throws SQLException {
+		this.connection = DbManager.getInstance().getConnection();
 		this.entityClass = entityClass;
 		this.statement = connection.createStatement();
+		
+		this.psFindAll = connection.prepareStatement("select * from " + entityClass.getSimpleName());
+	}
+	
+	public List<T> findAll() throws SQLException {
+	    return findAll( this.psFindAll );
 	}
 
-	public List<T> findAll(String sql) throws SQLException {
+	public List<T> findAll(PreparedStatement ps) throws SQLException {
 		List<T> list = new ArrayList<T>();
-		ResultSet rs = statement.executeQuery(sql);
+		ResultSet rs = ps.executeQuery();
 		while( rs.next() ){
 			list.add( createObjectFromResult( rs ) );
 		}
@@ -59,23 +68,13 @@ public class GenericDao<T extends IEntity> {
 		try {
 			obj = entityClass.newInstance();
 			
-			// TODO: set fields
+			setFields( rs, obj );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return obj;
 	}
 
-	private List<T> findAll(String sql, Map<String, Object> sqlParams) throws SQLException {
-		sql = createSql( sql, sqlParams );
-		return findAll(sql);
-	}
-
-	private String createSql(String sql, Map<String, Object> sqlParams) {
-		for( String param : sqlParams.keySet() ){
-			// TODO: set params
-		}
-		return sql;
-	}
+	protected abstract void setFields(ResultSet rs, T obj) throws SQLException;
 	
 }

@@ -65,11 +65,15 @@ public class DbManager {
 		}
 	}
 	
-	public Connection getConnection() throws ClassNotFoundException, SQLException {
+	public Connection getConnection() throws SQLException {
 		Thread t = Thread.currentThread();
 		Connection con = threadConMap.get(t);
 		if( con == null ){
-			con = createNewConnection();
+			try {
+                con = createNewConnection();
+            } catch (ClassNotFoundException e) {
+                throw new SQLException(e);
+            }
 			threadConMap.put(t, con);
 		}
 		return con;
@@ -78,7 +82,6 @@ public class DbManager {
 	private Connection createNewConnection() throws ClassNotFoundException, SQLException {
 		Class.forName( driver );
 		Connection conn = DriverManager.getConnection(connectionUrl,user,password);
-		conn.close();
-		return null;
+		return conn;
 	}
 }

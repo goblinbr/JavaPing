@@ -28,14 +28,22 @@ import com.sartor.javaping.EnumCommand;
 public class Host implements IEntity {
 
 	private Integer id;
-	
 	private String address;
-	
 	private Integer port;
-	
 	private EnumCommand command;
+	
+	public Host() {
+    }
 
-	public Integer getId() {
+	public Host(Integer id, String address, Integer port, EnumCommand command) {
+        super();
+        this.id = id;
+        this.address = address;
+        this.port = port;
+        this.command = command;
+    }
+
+    public Integer getId() {
 		return id;
 	}
 
