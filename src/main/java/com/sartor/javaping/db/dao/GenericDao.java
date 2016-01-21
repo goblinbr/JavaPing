@@ -190,9 +190,10 @@ public abstract class GenericDao<T extends IEntity> {
             else if( field.getType().isEnum() && DatabaseEnum.class.isAssignableFrom( field.getType() ) ) {
                 Object[] enumValues = field.getType().getEnumConstants();
                 
+                String fieldValue = rs.getString(column.name());
                 value = null;
                 for( Object enumValue : enumValues ){
-                    if( String.valueOf( ((DatabaseEnum) enumValue).getDatabaseValue() ).equals(value) ){
+                    if( String.valueOf( ((DatabaseEnum) enumValue).getDatabaseValue() ).equals(fieldValue) ){
                         value = enumValue;
                         break;
                     }
