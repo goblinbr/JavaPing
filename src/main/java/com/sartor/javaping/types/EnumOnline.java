@@ -21,17 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.sartor.javaping.types;
 
-package com.sartor.javaping.db.dao;
+import com.sartor.javaping.db.DatabaseEnum;
 
-import java.sql.SQLException;
-
-import com.sartor.javaping.db.entity.Host;
-
-public class HostDao extends GenericDao<Host> {
-	
-	public HostDao() throws SQLException {
-		super(Host.class);		
-	}
-	
+public enum EnumOnline implements DatabaseEnum {
+    ONLINE('Y'), OFFLINE('N');
+    
+    private final char databaseValue;
+    
+    private EnumOnline(char databaseValue) {
+        this.databaseValue = databaseValue;
+    }
+    
+    public char getDatabaseValue() {
+        return databaseValue;
+    }
 }

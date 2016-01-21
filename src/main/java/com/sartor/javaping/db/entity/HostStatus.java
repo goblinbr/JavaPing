@@ -23,66 +23,68 @@
  */
 package com.sartor.javaping.db.entity;
 
+import java.util.Calendar;
+
 import com.sartor.javaping.db.Column;
 import com.sartor.javaping.db.Table;
-import com.sartor.javaping.types.EnumCommand;
+import com.sartor.javaping.types.EnumOnline;
 
-@Table( name = "HOST" )
-public class Host implements IEntity {
+@Table( name = "HOST_STATUS" )
+public class HostStatus implements IEntity {
 
     @Column( name = "ID", isId = true )
-    private Integer id;
+    private String id;
     
-    @Column( name = "ADDRESS" )
-    private String address;
+    @Column( name = "HOST_ID" )
+    private Integer hostId;
     
-    @Column( name = "PORT" )
-    private Integer port;
+    @Column( name = "START" )
+    private Calendar start;
     
-    @Column( name = "COMMAND" )
-    private EnumCommand command;
+    @Column( name = "FINISH" )
+    private Calendar finish;
     
-    public Host() {
-    }
+    @Column( name = "ONLINE" )
+    private EnumOnline online;
 
-    public Host(Integer id, String address, Integer port, EnumCommand command) {
-        super();
-        this.id = id;
-        this.address = address;
-        this.port = port;
-        this.command = command;
-    }
-
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getAddress() {
-        return address;
+    public Integer getHostId() {
+        return hostId;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setHostId(Integer hostId) {
+        this.hostId = hostId;
     }
 
-    public Integer getPort() {
-        return port;
+    public Calendar getStart() {
+        return start;
     }
 
-    public void setPort(Integer port) {
-        this.port = port;
+    public void setStart(Calendar start) {
+        this.start = start;
     }
 
-    public EnumCommand getCommand() {
-        return command;
+    public Calendar getFinish() {
+        return finish;
     }
 
-    public void setCommand(EnumCommand command) {
-        this.command = command;
+    public void setFinish(Calendar finish) {
+        this.finish = finish;
+    }
+
+    public EnumOnline getOnline() {
+        return online;
+    }
+
+    public void setOnline(EnumOnline online) {
+        this.online = online;
     }
 
     @Override
@@ -101,7 +103,7 @@ public class Host implements IEntity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Host other = (Host) obj;
+        HostStatus other = (HostStatus) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
@@ -112,7 +114,7 @@ public class Host implements IEntity {
 
     @Override
     public String toString() {
-        return "Host [id=" + id + ", address=" + address + ", port=" + port + ", command=" + command + "]";
+        return "HostStatus [id=" + id + ", hostId=" + hostId + ", start=" + start + ", finish=" + finish + ", online=" + online + "]";
     }
 
 }

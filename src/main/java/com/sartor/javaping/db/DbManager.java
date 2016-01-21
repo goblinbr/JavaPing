@@ -27,9 +27,13 @@ package com.sartor.javaping.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.sartor.javaping.db.entity.Host;
 
 public class DbManager {
 	
@@ -84,4 +88,16 @@ public class DbManager {
 		Connection conn = DriverManager.getConnection(connectionUrl,user,password);
 		return conn;
 	}
+
+    public String createPingId( Host host ) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        String id = sdf.format(new Date()) + host.getId();
+        return id;
+    }
+
+    public String createHostStatusId(Host host) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        String id = sdf.format(new Date()) + host.getId();
+        return id;
+    }
 }

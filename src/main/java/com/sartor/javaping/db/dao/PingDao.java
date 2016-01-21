@@ -26,12 +26,12 @@ package com.sartor.javaping.db.dao;
 
 import java.sql.SQLException;
 
-import com.sartor.javaping.db.entity.Host;
+import com.sartor.javaping.db.entity.Ping;
 
-public class HostDao extends GenericDao<Host> {
-	
-	public HostDao() throws SQLException {
-		super(Host.class);		
+public class PingDao extends GenericDao<Ping> {
+    
+	public PingDao() throws SQLException {
+		super(Ping.class);
 	}
-	
+
 }

@@ -27,14 +27,16 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.sartor.javaping.db.DbManager;
 import com.sartor.javaping.db.dao.HostDao;
+import com.sartor.javaping.db.dao.PingDao;
 import com.sartor.javaping.db.entity.Host;
+import com.sartor.javaping.db.entity.Ping;
+import com.sartor.javaping.services.PingService;
+import com.sartor.javaping.types.EnumCommand;
 
-public class Ping {
+public class Main {
 
     private String countParam = "";
 
@@ -43,7 +45,7 @@ public class Ping {
     // Host(0,"www.amazon.com.br", 80, EnumCommand.CONNECT) };
     private Host[] redundantHosts = new Host[] { new Host(0, "www.google.com.br", 80, EnumCommand.CONNECT) };
 
-    private Ping() {
+    private Main() {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         if (isWindows) {
             this.countParam = "-n";
@@ -54,7 +56,7 @@ public class Ping {
 
     public static void main(String[] args) {
         try {
-            new Ping().run();
+            new Main().run();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -86,25 +88,27 @@ public class Ping {
         // hostList.add( new Host( 2, "200.169.77.40", 0, EnumCommand.PING ) );
 
         HostDao hostDao = new HostDao();
+        PingService pingService = new PingService();
+
         while (true) {
             try {
                 List<Host> hostList = hostDao.findAll();
                 for (Host host : hostList) {
-                    boolean pingOk = pingOrConnect(host, 500);
+                    PingReturn pr = pingOrConnect(host, 500);
 
                     boolean connectionOk = true;
-                    if (!pingOk) {
+                    if (!pr.isSuccessful()) {
                         for (Host redundantHost : this.redundantHosts) {
-                            if (!pingOrConnect(redundantHost, 3000)) {
+                            if (!pingOrConnect(redundantHost, 3000).isSuccessful()) {
                                 connectionOk = false;
                             }
                         }
                         if (connectionOk) {
-                            pingOk = pingOrConnect(host, 3000);
+                            pr = pingOrConnect(host, 3000);
                         }
                     }
-                    if (!pingOk && connectionOk) {
-                        System.err.println(host + " caiu!");
+                    if (connectionOk) {
+                        pingService.insertPing(host, pr.isSuccessful(), pr.getMs());
                     }
                 }
                 Thread.sleep(1000);
@@ -114,8 +118,9 @@ public class Ping {
         }
     }
 
-    private boolean pingOrConnect(Host host, int timeout) throws Exception {
-        long ms = System.currentTimeMillis();
+    private PingReturn pingOrConnect(Host host, int timeout) throws Exception {
+        long startMs = System.currentTimeMillis();
+        int ms = 0;
 
         boolean ok;
         if (host.getCommand() == EnumCommand.PING) {
@@ -123,7 +128,7 @@ public class Ping {
             Process proc = processBuilder.start();
 
             int returnVal = proc.waitFor();
-            ms = System.currentTimeMillis() - ms;
+            ms = (int) (System.currentTimeMillis() - startMs);
             System.out.println("ping " + host + ": " + ms + " ms");
 
             ok = returnVal == 0;
@@ -132,23 +137,36 @@ public class Ping {
                 Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(host.getAddress(), host.getPort()), timeout);
 
-                ms = System.currentTimeMillis() - ms;
+                ms = (int) (System.currentTimeMillis() - startMs);
                 System.out.println("connect " + host + ": " + ms + " ms");
-
-                // BufferedReader br = new BufferedReader(new
-                // InputStreamReader(socket.getInputStream()));
-
-                // System.out.println("server says:" + br.readLine());
 
                 socket.close();
 
                 ok = true;
-            } catch (IOException ex) {
-                ok = false;
             } catch (Exception e) {
                 ok = false;
             }
         }
-        return ok;
+
+        return new PingReturn(ok, ms);
+    }
+
+    class PingReturn {
+        private boolean successful;
+        private int ms;
+
+        public PingReturn(boolean successful, int ms) {
+            super();
+            this.successful = successful;
+            this.ms = ms;
+        }
+
+        public int getMs() {
+            return ms;
+        }
+
+        public boolean isSuccessful() {
+            return successful;
+        }
     }
 }

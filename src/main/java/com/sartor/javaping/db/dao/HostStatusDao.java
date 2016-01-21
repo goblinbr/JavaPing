@@ -21,27 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.sartor.javaping;
 
-public enum EnumCommand {
-    PING('P'), CONNECT('C');
-    
-    private final char databaseValue;
-    
-    private EnumCommand(char databaseValue) {
-        this.databaseValue = databaseValue;
-    }
-    
-    public char getDatabaseValue() {
-        return databaseValue;
-    }
+package com.sartor.javaping.db.dao;
 
-    public static EnumCommand getByDatabaseValue(String value) {
-        for( EnumCommand cmd : values() ){
-            if( String.valueOf( cmd.databaseValue ).equals(value) ){
-                return cmd;
-            }
-        }
-        return null;
-    }
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import com.sartor.javaping.db.entity.Host;
+import com.sartor.javaping.db.entity.HostStatus;
+
+public class HostStatusDao extends GenericDao<HostStatus> {
+    
+    private final PreparedStatement psFindOpenStatus;
+	
+	public HostStatusDao() throws SQLException {
+		super(HostStatus.class);
+		this.psFindOpenStatus = connection.prepareStatement("select * from HOST_STATUS where HOST_ID = ? and FINISH is null");
+	}
+	
+	public HostStatus findOpenStatus( Host host ) throws SQLException {
+	    this.psFindOpenStatus.setInt( 1, host.getId() );
+	    return find(this.psFindOpenStatus);
+	}
 }

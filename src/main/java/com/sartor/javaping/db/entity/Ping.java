@@ -23,66 +23,56 @@
  */
 package com.sartor.javaping.db.entity;
 
+import java.util.Calendar;
+
 import com.sartor.javaping.db.Column;
 import com.sartor.javaping.db.Table;
-import com.sartor.javaping.types.EnumCommand;
 
-@Table( name = "HOST" )
-public class Host implements IEntity {
+@Table( name = "PING" )
+public class Ping implements IEntity {
 
     @Column( name = "ID", isId = true )
-    private Integer id;
+    private String id;
     
-    @Column( name = "ADDRESS" )
-    private String address;
+    @Column( name = "HOST_ID" )
+    private Integer hostId;
     
-    @Column( name = "PORT" )
-    private Integer port;
+    @Column( name = "WHEN" )
+    private Calendar when;
     
-    @Column( name = "COMMAND" )
-    private EnumCommand command;
-    
-    public Host() {
-    }
+    @Column( name = "MS" )
+    private Integer ms;
 
-    public Host(Integer id, String address, Integer port, EnumCommand command) {
-        super();
-        this.id = id;
-        this.address = address;
-        this.port = port;
-        this.command = command;
-    }
-
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getAddress() {
-        return address;
+    public Integer getHostId() {
+        return hostId;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setHostId(Integer hostId) {
+        this.hostId = hostId;
     }
 
-    public Integer getPort() {
-        return port;
+    public Calendar getWhen() {
+        return when;
     }
 
-    public void setPort(Integer port) {
-        this.port = port;
+    public void setWhen(Calendar when) {
+        this.when = when;
     }
 
-    public EnumCommand getCommand() {
-        return command;
+    public Integer getMs() {
+        return ms;
     }
 
-    public void setCommand(EnumCommand command) {
-        this.command = command;
+    public void setMs(Integer ms) {
+        this.ms = ms;
     }
 
     @Override
@@ -101,7 +91,7 @@ public class Host implements IEntity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Host other = (Host) obj;
+        Ping other = (Ping) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
@@ -112,7 +102,7 @@ public class Host implements IEntity {
 
     @Override
     public String toString() {
-        return "Host [id=" + id + ", address=" + address + ", port=" + port + ", command=" + command + "]";
+        return "Ping [id=" + id + ", hostId=" + hostId + ", when=" + when + ", ms=" + ms + "]";
     }
 
 }
