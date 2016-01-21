@@ -179,9 +179,6 @@ public abstract class GenericDao<T extends IEntity> {
                 value = rs.getLong( column.name() );
             }
             else if( field.getType() == Calendar.class ){
-                
-            }
-            else if( field.getType() == Calendar.class ){
                 value = CalendarUtil.getCalendar( rs.getTimestamp( column.name() ) );
             }
             else if( field.getType() == String.class ){
@@ -215,16 +212,7 @@ public abstract class GenericDao<T extends IEntity> {
         try {
             for( Field field : this.insertFieldPositionMap.keySet() ){
                 Integer position = this.insertFieldPositionMap.get(field);
-                Object value = field.get(obj);
-                if( value instanceof Calendar ){
-                    Calendar calendar = (Calendar) value;
-                    value = new Timestamp( calendar.getTimeInMillis() );
-                }
-                else if( value instanceof DatabaseEnum ) {
-                    DatabaseEnum databaseEnum = (DatabaseEnum) value;
-                    value = databaseEnum.getDatabaseValue();
-                }
-                
+                Object value = convertToDatabaseValue( field.get(obj) );
                 this.psInsert.setObject( position, value );
             }
             this.psInsert.execute();
@@ -239,7 +227,8 @@ public abstract class GenericDao<T extends IEntity> {
         try {
             for( Field field : this.updateFieldPositionMap.keySet() ){
                 Integer position = this.updateFieldPositionMap.get(field);
-                this.psUpdate.setObject( position, field.get(obj) );
+                Object value = convertToDatabaseValue( field.get(obj) );
+                this.psUpdate.setObject( position, value );
             }
             this.psUpdate.execute();
         } catch (SQLException e){
@@ -247,5 +236,17 @@ public abstract class GenericDao<T extends IEntity> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private Object convertToDatabaseValue(Object value) {
+        if( value instanceof Calendar ){
+            Calendar calendar = (Calendar) value;
+            value = new Timestamp( calendar.getTimeInMillis() );
+        }
+        else if( value instanceof DatabaseEnum ) {
+            DatabaseEnum databaseEnum = (DatabaseEnum) value;
+            value = databaseEnum.getDatabaseValue();
+        }
+        return value;
     }
 }
