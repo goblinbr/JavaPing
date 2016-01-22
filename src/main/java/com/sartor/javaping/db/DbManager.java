@@ -24,8 +24,12 @@
 
 package com.sartor.javaping.db;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -38,67 +42,82 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.sartor.javaping.db.entity.Host;
 
 public class DbManager {
-	
-	private static final DbManager instance = new DbManager();
-	private String driver;
-	private String connectionUrl;
-	private String user;
-	private String password;
-	private final ConcurrentHashMap<Thread,Connection> threadConMap;
 
-	private DbManager() {
-	    this.threadConMap = new ConcurrentHashMap<Thread, Connection>();
-	    try{
-    	    Properties propFile = new Properties();
-    	    propFile.load( new FileInputStream( "config.properties" ) );
-    	    
-    		this.driver = propFile.getProperty("driver");
-    		this.connectionUrl = propFile.getProperty("url");
-    		this.user = propFile.getProperty("user");
-    		this.password = propFile.getProperty("password");
-	    }
-	    catch( Exception ex ){
-	        ex.printStackTrace();
-	    }
-	}
+    private static final DbManager instance = new DbManager();
+    private String driver;
+    private String connectionUrl;
+    private String user;
+    private String password;
+    private String[] jars;
+    private final ConcurrentHashMap<Thread, Connection> threadConMap;
 
-	public static DbManager getInstance() {
-		return instance;
-	}
-	
-	public void closeAll() {
-		Collection<Connection> cons = new ArrayList<Connection>( threadConMap.values() );
-		threadConMap.clear();
-		for( Connection con : cons ){
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public Connection getConnection() throws SQLException {
-		Thread t = Thread.currentThread();
-		Connection con = threadConMap.get(t);
-		if( con == null ){
-			try {
+    private DbManager() {
+        this.threadConMap = new ConcurrentHashMap<Thread, Connection>();
+        try {
+            Properties propFile = new Properties();
+            propFile.load(new FileInputStream("config.properties"));
+
+            this.driver = propFile.getProperty("driver");
+            this.connectionUrl = propFile.getProperty("url");
+            this.user = propFile.getProperty("user");
+            this.password = propFile.getProperty("password");
+            this.jars = propFile.getProperty("driver_jars").split(",");
+
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            if (this.jars != null && this.jars.length > 0) {
+                URL[] urls = new URL[this.jars.length];
+                for (int i = 0; i < this.jars.length; i++) {
+                    File file = new File(this.jars[i]);
+                    urls[i] = file.toURI().toURL();
+                }
+                classLoader = new URLClassLoader(urls, classLoader);
+
+                Driver d = (Driver) Class.forName(driver, true, classLoader).newInstance();
+                DriverManager.registerDriver(new DelegateDriver(d));
+            } else {
+                Class.forName(driver);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static DbManager getInstance() {
+        return instance;
+    }
+
+    public void closeAll() {
+        Collection<Connection> cons = new ArrayList<Connection>(this.threadConMap.values());
+        this.threadConMap.clear();
+        for (Connection con : cons) {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public Connection getConnection() throws SQLException {
+        Thread t = Thread.currentThread();
+        Connection con = this.threadConMap.get(t);
+        if (con == null) {
+            try {
                 con = createNewConnection();
             } catch (ClassNotFoundException e) {
                 throw new SQLException(e);
             }
-			threadConMap.put(t, con);
-		}
-		return con;
-	}
+            this.threadConMap.put(t, con);
+        }
+        return con;
+    }
 
-	private Connection createNewConnection() throws ClassNotFoundException, SQLException {
-		Class.forName( driver );
-		Connection conn = DriverManager.getConnection(connectionUrl,user,password);
-		return conn;
-	}
+    private Connection createNewConnection() throws ClassNotFoundException, SQLException {
+        Connection conn = DriverManager.getConnection(this.connectionUrl, this.user, this.password);
+        return conn;
+    }
 
-    public String createPingId( Host host ) {
+    public String createPingId(Host host) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
         String id = sdf.format(new Date()) + host.getId();
         return id;
