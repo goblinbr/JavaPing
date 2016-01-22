@@ -24,6 +24,7 @@
 
 package com.sartor.javaping.db;
 
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.sartor.javaping.db.entity.Host;
@@ -38,19 +40,26 @@ import com.sartor.javaping.db.entity.Host;
 public class DbManager {
 	
 	private static final DbManager instance = new DbManager();
-	private final String driver;
-	private final String connectionUrl;
-	private final String user;
-	private final String password;
+	private String driver;
+	private String connectionUrl;
+	private String user;
+	private String password;
 	private final ConcurrentHashMap<Thread,Connection> threadConMap;
 
 	private DbManager() {
-		// TODO: read from file
-		driver = "org.h2.Driver";
-		connectionUrl = "jdbc:h2:tcp://localhost/~/ping";
-		user = "admin";
-		password = "admin";
-		threadConMap = new ConcurrentHashMap<Thread, Connection>();
+	    this.threadConMap = new ConcurrentHashMap<Thread, Connection>();
+	    try{
+    	    Properties propFile = new Properties();
+    	    propFile.load( new FileInputStream( "config.properties" ) );
+    	    
+    		this.driver = propFile.getProperty("driver");
+    		this.connectionUrl = propFile.getProperty("url");
+    		this.user = propFile.getProperty("user");
+    		this.password = propFile.getProperty("password");
+	    }
+	    catch( Exception ex ){
+	        ex.printStackTrace();
+	    }
 	}
 
 	public static DbManager getInstance() {
