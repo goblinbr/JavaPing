@@ -23,16 +23,13 @@
  */
 package com.sartor.javaping;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.List;
 
 import com.sartor.javaping.db.dao.HostDao;
-import com.sartor.javaping.db.dao.PingDao;
 import com.sartor.javaping.db.entity.Host;
-import com.sartor.javaping.db.entity.Ping;
 import com.sartor.javaping.services.PingService;
 import com.sartor.javaping.types.EnumCommand;
 
@@ -40,10 +37,7 @@ public class Main {
 
     private String countParam = "";
 
-    // private Host[] redundantHosts = new Host[] { new
-    // Host(0,"www.google.com.br", 80, EnumCommand.CONNECT), new
-    // Host(0,"www.amazon.com.br", 80, EnumCommand.CONNECT) };
-    private Host[] redundantHosts = new Host[] { new Host(0, "www.google.com.br", 80, EnumCommand.CONNECT) };
+    private Host[] redundantHosts = new Host[] { new Host(0, "www.google.com.br", 80, EnumCommand.CONNECT), new Host(0, "www.amazon.com.br", 80, EnumCommand.CONNECT) };
 
     private Main() {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
@@ -64,35 +58,12 @@ public class Main {
     }
 
     private void run() throws SQLException {
-        // List<Host> hostList = new ArrayList<Host>();
-        // hostList.add( new Host( 2, "www.kugel.com.br", 80,
-        // EnumCommand.CONNECT ) );
-        // hostList.add( new Host( 2, "www.kugel.com.br", 80, EnumCommand.PING )
-        // );
-        // hostList.add( new Host( 3, "www.capal.coop.br", 80,
-        // EnumCommand.CONNECT ) );
-        // hostList.add( new Host( 3, "www.capal.coop.br", 80, EnumCommand.PING
-        // ) );
-        // hostList.add( new Host( 4, "200.169.77.34", 80, EnumCommand.CONNECT )
-        // );
-        // hostList.add( new Host( 4, "200.169.77.34", 80, EnumCommand.PING ) );
-        // hostList.add( new Host( 5, "201.47.57.180", 80, EnumCommand.CONNECT )
-        // );
-        // hostList.add( new Host( 5, "201.47.57.180", 80, EnumCommand.PING ) );
-        // hostList.add( new Host( 5, "201.47.57.181", 80, EnumCommand.CONNECT )
-        // );
-        // hostList.add( new Host( 5, "201.47.57.181", 80, EnumCommand.PING ) );
-
-        // hostList.add( new Host( 5, "200.169.77.40", 3389, EnumCommand.CONNECT
-        // ) );
-        // hostList.add( new Host( 2, "200.169.77.40", 0, EnumCommand.PING ) );
-
         HostDao hostDao = new HostDao();
         PingService pingService = new PingService();
 
         while (true) {
             try {
-                List<Host> hostList = hostDao.findAll();
+                List<Host> hostList = hostDao.findAllPaidGreaterThanToday();
                 for (Host host : hostList) {
                     PingReturn pr = pingOrConnect(host, 500);
 
@@ -129,7 +100,6 @@ public class Main {
 
             int returnVal = proc.waitFor();
             ms = (int) (System.currentTimeMillis() - startMs);
-            System.out.println("ping " + host + ": " + ms + " ms");
 
             ok = returnVal == 0;
         } else {
@@ -138,7 +108,6 @@ public class Main {
                 socket.connect(new InetSocketAddress(host.getAddress(), host.getPort()), timeout);
 
                 ms = (int) (System.currentTimeMillis() - startMs);
-                System.out.println("connect " + host + ": " + ms + " ms");
 
                 socket.close();
 

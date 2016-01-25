@@ -24,14 +24,23 @@
 
 package com.sartor.javaping.db.dao;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import com.sartor.javaping.db.entity.Host;
 
 public class HostDao extends GenericDao<Host> {
 	
+    private PreparedStatement psFindAllPaidGreaterThanToday;
+    
 	public HostDao() throws SQLException {
-		super(Host.class);		
+		super(Host.class);
+		this.psFindAllPaidGreaterThanToday = connection.prepareStatement("SELECT distinct HOST.* FROM USER_HOST INNER JOIN HOST ON (HOST.ID = USER_HOST.HOST_ID) WHERE USER_HOST.PAID_UNTIL >= TODAY ORDER BY HOST.ID");
 	}
+
+    public List<Host> findAllPaidGreaterThanToday() throws SQLException {
+        return findAll(this.psFindAllPaidGreaterThanToday);
+    }
 	
 }
