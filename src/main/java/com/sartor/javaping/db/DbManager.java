@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -119,13 +120,13 @@ public class DbManager {
 
     public String createPingId(Host host) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-        String id = sdf.format(new Date()) + host.getId();
+        String id = sdf.format(new Date()) + new DecimalFormat("0000000000").format( host.getId() );
         return id;
     }
 
     public String createHostStatusId(Host host) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-        String id = sdf.format(new Date()) + host.getId();
+        String id = sdf.format(new Date()) + new DecimalFormat("0000000000").format( host.getId() );
         return id;
     }
 }
