@@ -27,6 +27,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.sartor.javaping.db.DbManager;
 import com.sartor.javaping.db.dao.HostDao;
 import com.sartor.javaping.db.entity.Host;
@@ -34,6 +38,8 @@ import com.sartor.javaping.services.PingService;
 import com.sartor.javaping.types.EnumCommand;
 
 public class Main {
+    
+    private static final Logger logger = LogManager.getLogger();
 
     private String countParam = "";
 
@@ -46,6 +52,8 @@ public class Main {
         } else {
             this.countParam = "-c";
         }
+        
+        logger.info("Initializing at " + System.getProperty("os.name"));
     }
 
     public static void main(String[] args) {
@@ -86,8 +94,7 @@ public class Main {
                 }
                 Thread.sleep(1000);
             } catch (Exception ex) {
-                // TODO: create log
-                ex.printStackTrace();
+                logger.catching(Level.ERROR, ex);
 
                 hostDao = null;
                 pingService = null;
@@ -96,8 +103,7 @@ public class Main {
                     DbManager.getInstance().closeAll();
                     Thread.sleep(10000);
                 } catch (Exception exp) {
-                    // TODO: create log
-                    exp.printStackTrace();
+                    logger.catching(Level.ERROR, exp);
                 }
             }
         }
