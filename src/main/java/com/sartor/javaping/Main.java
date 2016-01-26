@@ -25,9 +25,9 @@ package com.sartor.javaping;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.List;
 
+import com.sartor.javaping.db.DbManager;
 import com.sartor.javaping.db.dao.HostDao;
 import com.sartor.javaping.db.entity.Host;
 import com.sartor.javaping.services.PingService;
@@ -49,20 +49,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        try {
-            new Main().run();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        new Main().run();
     }
 
-    private void run() throws SQLException {
-        HostDao hostDao = new HostDao();
-        PingService pingService = new PingService();
+    private void run() {
+        HostDao hostDao = null;
+        PingService pingService = null;
 
         while (true) {
             try {
+                if (hostDao == null) {
+                    hostDao = new HostDao();
+                }
+                if (pingService == null) {
+                    pingService = new PingService();
+                }
+
                 List<Host> hostList = hostDao.findAllPaidGreaterThanToday();
                 for (Host host : hostList) {
                     PingReturn pr = pingOrConnect(host, 500);
@@ -84,7 +86,19 @@ public class Main {
                 }
                 Thread.sleep(1000);
             } catch (Exception ex) {
+                // TODO: create log
                 ex.printStackTrace();
+
+                hostDao = null;
+                pingService = null;
+
+                try {
+                    DbManager.getInstance().closeAll();
+                    Thread.sleep(10000);
+                } catch (Exception exp) {
+                    // TODO: create log
+                    exp.printStackTrace();
+                }
             }
         }
     }
